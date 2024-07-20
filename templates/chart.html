@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Charts</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Environmental Data</h1>
+    <div class="charts-grid">
+        <canvas id="scoreChart"></canvas>
+        <canvas id="tempChart"></canvas>
+        <canvas id="humidChart"></canvas>
+        <canvas id="co2Chart"></canvas>
+        <canvas id="vocChart"></canvas>
+    </div>
+
+    <style>
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            width: 50%;
+            height: 50%;
+
+        }
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            width: 100%;
+            height: 40px; /* Adjust the height as needed */
+        }
+        h1 {
+            font-size: 24px; /* Adjust the font size as needed */
+            text-align: center; /* Optional: Center the text */
+        }
+    </style>
+
+    <script>
+        async function fetchData() {
+            const response = await fetch('/data');
+            const data = await response.json();
+            const dataArray = data.data;
+            const labels = dataArray.map(entry => new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            const tempData = dataArray.map(entry => entry.temp);
+            const humidData = dataArray.map(entry => entry.humid);
+            const co2Data = dataArray.map(entry => entry.co2);
+            const vocData = dataArray.map(entry => entry.voc);
+            const scoreData = dataArray.map(entry => entry.score);
+
+
+            createChart('tempChart', 'Temperature', labels, tempData, 'rgba(75, 192, 192, 1)', 'rgba(75, 192, 192, 0.2)');
+            createChart('humidChart', 'Humidity', labels, humidData, 'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)');
+            createChart('co2Chart', 'CO2', labels, co2Data, 'rgba(54, 162, 235, 1)', 'rgba(54, 162, 235, 0.2)');
+            createChart('vocChart', 'VOC', labels, vocData, 'rgba(153, 102, 255, 1)', 'rgba(153, 102, 255, 0.2)');
+            createChart('scoreChart', 'Score', labels, scoreData, 'rgba(255, 206, 86, 1)', 'rgba(255, 206, 86, 0.2)');
+        }
+
+        function createChart(elementId, label, labels, data, borderColor, backgroundColor) {
+            const ctx = document.getElementById(elementId).getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        borderColor: borderColor,
+                        backgroundColor: backgroundColor,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
